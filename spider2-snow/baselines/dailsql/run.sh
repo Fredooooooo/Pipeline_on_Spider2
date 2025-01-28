@@ -2,7 +2,7 @@
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-DEV=spider2-lite
+DEV=spider2-snow
 # DEV=toy
 LLM=gpt-4o
 COMMENT=1112

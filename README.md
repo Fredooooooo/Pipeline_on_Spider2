@@ -1,1 +1,1 @@
-RSL-SQL pipeline evaluateed on Spider2.0-snow
+RSL-SQL pipeline evaluated on Spider2.0-snow
