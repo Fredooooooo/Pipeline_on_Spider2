@@ -1,8 +1,17 @@
-from llm.LLM import GPT as model
+from llm.LLM import QWQ as model
 import json
 from tqdm import tqdm
 from configs.Instruction import TABLE_AUG_INSTRUCTION, SQL_GENERATION_INSTRUCTION
 import argparse
+import sys
+import os
+sys.path.append(".")
+from configs.config import model_path, cuda_visible
+
+os.environ["HF_DATASETS_CACHE"] = model_path
+os.environ["HF_HOME"] = model_path
+os.environ["HF_HUB_CACHE"] = model_path
+os.environ["CUDA_VISIBLE_DEVICES"] = cuda_visible
 
 
 def table_info_construct(ppl):
@@ -18,17 +27,17 @@ def table_info_construct(ppl):
 
 
 def table_column_selection(table_info, ppl):
-    gpt = model()
+    qwq = model()
     evidence = ppl['evidence'].strip()
     question = ppl['question'].strip()
     prompt_table = table_info.strip() + '\n\n' + '### definition: ' + evidence + "\n### Question: " + question
-    table_column = gpt(TABLE_AUG_INSTRUCTION, prompt_table)
+    table_column = qwq(TABLE_AUG_INSTRUCTION, prompt_table)
     table_column = json.loads(table_column)
     return table_column
 
 
 def preliminary_sql(table_info, table_column, ppl):
-    gpt = model()
+    qwq = model()
     example = ppl['example']
     evidence = ppl['evidence'].strip()
     question = ppl['question'].strip()
@@ -37,7 +46,7 @@ def preliminary_sql(table_info, table_column, ppl):
 
     table_info = example.strip() + "\n\n### Answer the question by sqlite SQL query only and with no explanation. You must minimize SQL execution time while ensuring correctness.\n" + table_info.strip() + '\n\n### definition: ' + evidence + "\n### Question: " + question
 
-    answer = gpt(SQL_GENERATION_INSTRUCTION, table_info)
+    answer = qwq(SQL_GENERATION_INSTRUCTION, table_info)
     try:
         answer = json.loads(answer)
     except Exception as e:

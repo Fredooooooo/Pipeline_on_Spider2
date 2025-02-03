@@ -1,4 +1,4 @@
-from llm.LLM import GPT as model
+from llm.LLM import QWQ as model
 import json
 from tqdm import tqdm
 from utils.simplified_schema import simplified, explanation_collection
@@ -21,36 +21,36 @@ def table_augmentation(table_info, ppl):
     question = ppl['question'].strip()
     evidence = ppl['evidence'].strip()
 
-    gpt = model()
-    table_gpt_res_prompt = table_info.strip() + '\n\n' + '### definition: ' + evidence + "\n### Question: " + question
-    table_gpt_res = gpt(TABLE_AUG_INSTRUCTION, table_gpt_res_prompt)
-    table_gpt_res = json.loads(table_gpt_res)
-    return table_gpt_res
+    qwq = model()
+    table_qwq_res_prompt = table_info.strip() + '\n\n' + '### definition: ' + evidence + "\n### Question: " + question
+    table_qwq_res = qwq(TABLE_AUG_INSTRUCTION, table_qwq_res_prompt)
+    table_qwq_res = json.loads(table_qwq_res)
+    return table_qwq_res
 
 
 def key_word_augmentation(table_info, ppl):
-    gpt = model()
+    qwq = model()
 
     question = ppl['question'].strip()
     evidence = ppl['evidence'].strip()
-    word_gpt_res_prompt = table_info.strip() + '\n\n' + '### definition: ' + evidence + "\n### Question: " + question
-    word_gpt_res = gpt(KEY_WORD_AUG_INSTRUCTION, word_gpt_res_prompt)
+    word_qwq_res_prompt = table_info.strip() + '\n\n' + '### definition: ' + evidence + "\n### Question: " + question
+    word_qwq_res = qwq(KEY_WORD_AUG_INSTRUCTION, word_qwq_res_prompt)
 
-    word_gpt_res = json.loads(word_gpt_res)
-    return word_gpt_res
+    word_qwq_res = json.loads(word_qwq_res)
+    return word_qwq_res
 
 
 def condition_augmentation(ppl):
-    gpt = model()
+    qwq = model()
 
     question = ppl['question'].strip()
-    relation_gpt_res = gpt(CONDITION_AUG_INSTRUCTION, question)
-    relation_gpt_res = json.loads(relation_gpt_res)
-    return relation_gpt_res
+    relation_qwq_res = qwq(CONDITION_AUG_INSTRUCTION, question)
+    relation_qwq_res = json.loads(relation_qwq_res)
+    return relation_qwq_res
 
 
 def sql_generation(ppl, table_aug, word_aug, cond_aug, table_info):
-    gpt = model()
+    qwq = model()
 
     question = ppl['question'].strip()
     evidence = ppl['evidence'].strip()
@@ -62,8 +62,8 @@ def sql_generation(ppl, table_aug, word_aug, cond_aug, table_info):
 
     table_info = example.strip() + '\n\n' + "### Answer the question by sqlite SQL query only and with no explanation. You must minimize SQL execution time while ensuring correctness.\n" + table_info.strip() + '\n\n' + '### definition: ' + evidence + "\n### Question: " + question
 
-    # 3.4. thought_gpt
-    answer = gpt(SQL_GENERATION_INSTRUCTION, table_info)
+    # 3.4. thought_qwq
+    answer = qwq(SQL_GENERATION_INSTRUCTION, table_info)
     try:
         answer = json.loads(answer)
     except Exception as e:

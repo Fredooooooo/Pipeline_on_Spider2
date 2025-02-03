@@ -1,4 +1,4 @@
-from llm.Binary_GPT import GPT
+from llm.Binary_GPT import QWQ
 import json
 from tqdm import tqdm
 from utils.util import execute_sql
@@ -26,7 +26,7 @@ def prompt_construct(simple_ddl, ddl_data, foreign_key, explanation, ppl, sql1, 
 
 
 def sql_generation(table_info, candidate_sql):
-    binary_gpt = GPT()
+    binary_gpt = QWQ()
     answer = binary_gpt(table_info, candidate_sql)
     try:
         answer = json.loads(answer)

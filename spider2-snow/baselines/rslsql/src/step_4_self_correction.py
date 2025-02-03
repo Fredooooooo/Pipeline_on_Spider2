@@ -1,4 +1,4 @@
-from llm.self_correction_gpt import GPT
+from llm.self_correction_gpt import QWQ
 import json
 from tqdm import tqdm
 from utils.util import execute_sql
@@ -24,7 +24,7 @@ def table_info_construct(ppl, simple_ddl, ddl_data, foreign_key, explanation):
 
 
 def main(ppl_file, sql_file, output_file, x=0):
-    gpt = GPT()
+    gpt = QWQ()
 
     # 1.加载prompt信息 从0开始
     with open(ppl_file, 'r') as f:
