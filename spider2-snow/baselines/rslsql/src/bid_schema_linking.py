@@ -35,7 +35,9 @@ def extract_from_hint(output_path):
         dev_set = json.load(f)
 
     pred_truths = []
-    for i in range(len(dev_set)):
+    # for i in range(len(dev_set)):
+    # Try first 128 questions for now
+    for i in range(128):
         hint = dev_set[i]['evidence']
         db_name = dev_set[i]['db_id']
         pred_truth = []

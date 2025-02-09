@@ -2,6 +2,7 @@ import argparse
 import json
 from get_example_modules import EuclideanDistanceQuestionMaskSelector
 from tqdm import tqdm
+import time
 
 def get_example_prefix():
     return "### Some example pairs of question and corresponding SQL query are provided based on similar problems:\n"
@@ -42,7 +43,8 @@ def run_sql_generation(input_data,out_file,k_shot=0,):
 
 
 if __name__ == '__main__':
-
+    
+    start_time = time.time()
     # 创建 ArgumentParser 对象
     parser = argparse.ArgumentParser()
 
@@ -59,6 +61,9 @@ if __name__ == '__main__':
     print()
 
     run_sql_generation( input_data, args.out_file, args.kshot)
+    
+    end_time = time.time()
+    print("takes: {:.2f}seconds".format(end_time - start_time))
 
 
 

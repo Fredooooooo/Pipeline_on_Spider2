@@ -54,8 +54,8 @@ class QWQ:
         self.device = device
         self.tokenizer = AutoTokenizer.from_pretrained(model_path)
         self.model = AutoModelForCausalLM.from_pretrained(
-            model_path, torch_dtype="auto", device_map="auto"
-        ).to(self.device)
+            model_path, device_map="auto", trust_remote_code=True, torch_dtype="auto"
+        ).eval()
     
     def __call__(self, message):
         """

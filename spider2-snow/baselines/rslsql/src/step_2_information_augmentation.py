@@ -23,7 +23,11 @@ def table_augmentation(table_info, ppl):
 
     qwq = model()
     table_qwq_res_prompt = table_info.strip() + '\n\n' + '### definition: ' + evidence + "\n### Question: " + question
-    table_qwq_res = qwq(TABLE_AUG_INSTRUCTION, table_qwq_res_prompt)
+    json_prompt = '''Respond only with valid json. Do not write an introduction or summary.
+    The format is {"tables": ["table1", "table2", ...],"columns":["table1.`column1`","table2.`column2`",...]}
+    '''
+    prompt = table_qwq_res_prompt + '\n\n' + json_prompt
+    table_qwq_res = qwq(TABLE_AUG_INSTRUCTION, prompt)
     table_qwq_res = json.loads(table_qwq_res)
     return table_qwq_res
 
@@ -34,7 +38,11 @@ def key_word_augmentation(table_info, ppl):
     question = ppl['question'].strip()
     evidence = ppl['evidence'].strip()
     word_qwq_res_prompt = table_info.strip() + '\n\n' + '### definition: ' + evidence + "\n### Question: " + question
-    word_qwq_res = qwq(KEY_WORD_AUG_INSTRUCTION, word_qwq_res_prompt)
+    json_prompt = '''Respond **only** in valid JSON format. Do not include any text outside of JSON. The JSON should look like this:
+    {"sql_keywords": ["keyword1", "keyword2", ...]}
+    '''
+    prompt = word_qwq_res_prompt + '\n\n' + json_prompt
+    word_qwq_res = qwq(KEY_WORD_AUG_INSTRUCTION, prompt)
 
     word_qwq_res = json.loads(word_qwq_res)
     return word_qwq_res
@@ -44,7 +52,11 @@ def condition_augmentation(ppl):
     qwq = model()
 
     question = ppl['question'].strip()
-    relation_qwq_res = qwq(CONDITION_AUG_INSTRUCTION, question)
+    json_prompt = '''Respond **only** in valid JSON format. Do not include any text outside of JSON. The JSON should look like this:
+    {"conditions": ["condition1", "condition2", ...]}
+    '''
+    prompt = question + '\n\n' + json_prompt
+    relation_qwq_res = qwq(CONDITION_AUG_INSTRUCTION, prompt)
     relation_qwq_res = json.loads(relation_qwq_res)
     return relation_qwq_res
 
@@ -61,9 +73,12 @@ def sql_generation(ppl, table_aug, word_aug, cond_aug, table_info):
     table_info += f'### conditions: {cond_aug["conditions"]}'
 
     table_info = example.strip() + '\n\n' + "### Answer the question by sqlite SQL query only and with no explanation. You must minimize SQL execution time while ensuring correctness.\n" + table_info.strip() + '\n\n' + '### definition: ' + evidence + "\n### Question: " + question
-
+    json_prompt = '''Respond **only** in valid JSON format. Do not include any text outside of JSON. The JSON should look like this:
+    {"sql": "SQL statement that meets the user's question requirements"}
+    '''
+    prompt = table_info + '\n\n' + json_prompt
     # 3.4. thought_qwq
-    answer = qwq(SQL_GENERATION_INSTRUCTION, table_info)
+    answer = qwq(SQL_GENERATION_INSTRUCTION, prompt)
     try:
         answer = json.loads(answer)
     except Exception as e:
@@ -82,7 +97,9 @@ def main(ppl_file, output_file, info_file, x):
     answers = []
     informations = []
 
-    for i in tqdm(range(x, len(ppls))):
+    # for i in tqdm(range(x, len(ppls))):
+    # Try first 128 questions for now
+    for i in tqdm(range(x, 128)):
         information = {}
         ppl = ppls[i]
 

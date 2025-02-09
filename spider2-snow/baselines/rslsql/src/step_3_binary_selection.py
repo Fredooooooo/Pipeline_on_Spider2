@@ -50,7 +50,9 @@ def main(ppl_file, output_file, sql_file1, sql_file2, x=0):
 
     answers = []
 
-    for i in tqdm(range(x, len(ppls))):
+    # for i in tqdm(range(x, len(ppls))):
+    # Try first 128 questions for now
+    for i in tqdm(range(x, 128)):
         ppl = ppls[i]
         sql1 = sqls1s[i].strip()
         sql2 = sqls2s[i].strip()

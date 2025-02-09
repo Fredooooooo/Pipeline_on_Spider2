@@ -36,8 +36,11 @@ def main(ppl_file, sql_file, output_file, x=0):
     sys_message = SELF_CORRECTION_PROMPT
 
     answers = []
+    step4_sql_input = step4_sql_output = 0
 
-    for i in tqdm(range(x, len(ppls))):
+    # for i in tqdm(range(x, len(ppls))):
+    # Try first 128 questions for now
+    for i in tqdm(range(x, 128)):
         message = []
         message.append({'role': 'system', 'content': sys_message})
         ppl = ppls[i]
@@ -61,8 +64,14 @@ def main(ppl_file, sql_file, output_file, x=0):
             if num > 0:
                 table_info = "### Buggy SQL: " + pre_sql.strip() + "\n" + f"### The result of the buggy SQL is [{result.strip()}]. Please fix the SQL to get the correct result."
             if row_count == 0 and column_count == 0:
-                message.append({'role': 'user', 'content': table_info})
+                json_prompt = '''Respond only with valid json. Do not write an introduction or summary.
+                The format is {"sql": "SQL statement that meets the user question requirements"}
+                '''
+                prompt = table_info + '\n\n' + json_prompt
+                step4_sql_input += len(gpt.tokenizer.tokenize(prompt))
+                message.append({'role': 'user', 'content': prompt})
                 message, answer = gpt(message)
+                step4_sql_output += len(gpt.tokenizer.tokenize(answer))
                 num += 1
                 try:
                     answer = json.loads(answer)
@@ -79,6 +88,8 @@ def main(ppl_file, sql_file, output_file, x=0):
         with open(output_file, 'w') as f:
             for answer in answers:
                 f.write(answer + '\n')
+    print(f"Total prompt tokens for step4_sql_input: {step4_sql_input}")
+    print(f"Total output tokens for step4_sql_output: {step4_sql_output}")
 
 
 if __name__ == '__main__':

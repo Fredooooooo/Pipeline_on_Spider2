@@ -23,6 +23,8 @@ You are an intelligent agent responsible for identifying the conditions in the u
 - Ensure that all conditions in the user's question are correctly extracted and understood.
 - If the user's question contains complex conditions or multiple relationships, please make a reasonable judgment based on the context.
 
+### Respond **only** in valid JSON format. Do not include any text outside of JSON. The JSON should look like this:
+{"conditions": ["condition1", "condition2", ...]}
 '''
 
 TABLE_AUG_INSTRUCTION = '''
@@ -54,6 +56,8 @@ You are an intelligent agent responsible for identifying the database tables inv
 - Ensure that all possible intermediate tables are considered, especially tables involving many-to-many relationships.
 - Ensure that the output table list is unique and without duplicates.
 
+### Respond **only** in valid JSON format. Do not include any text outside of JSON. The JSON should look like this:
+{"tables": ["table1", "table2", ...],"columns":["table1.`column1`","table2.`column2`",...]}
 '''
 
 
@@ -119,6 +123,9 @@ Your main tasks are:
 - definition: Information for prompts, this message is very important.
 - In the generated SQL statement, table names and field names need to be enclosed in backticks, such as `table_name`, `column_name`.
 - In the generated SQL statement, table names and field names must be correct to ensure the correctness and efficiency of the statement.
+
+### Respond **only** in valid JSON format. Do not include any text outside of JSON. The JSON should look like this:
+{"sql": "SQL statement that meets the user's question requirements"}
 '''
 
 KEY_WORD_AUG_INSTRUCTION = '''
@@ -163,6 +170,9 @@ You are an AI tasked with determining whether SQL statements need to use the fol
 - Ensure that you understand the query requirements in user questions to accurately suggest SQL keywords and operations.
 - Based on database structure and sample data, make reasonable judgments on whether specific SQL keywords or operations are needed.
 - If user questions involve multiple query requirements, consider all requirements to generate suggestions.
+
+### Respond **only** in valid JSON format. Do not include any text outside of JSON. The JSON should look like this:
+{"sql_keywords": ["keyword1", "keyword2", ...]}
 '''
 
 BINARY_PROMPT = '''{table_info}
@@ -226,5 +236,8 @@ Your main tasks are:
 - Hint: Information for prompting, this message is very important.
 - In the generated SQL statement, table names and field names need to be enclosed in backquotes, such as `table_name`, `column_name`.
 - In the generated SQL statement, table names and field names must be correct to ensure the correctness and efficiency of the statement.
+
+### Respond **only** in valid JSON format. Do not include any text outside of JSON. The JSON should look like this:
+{"sql": "SQL statement that meets the user question requirements"}
 '''
 

@@ -5,6 +5,7 @@ from configs.Instruction import TABLE_AUG_INSTRUCTION, SQL_GENERATION_INSTRUCTIO
 import argparse
 import sys
 import os
+import torch
 sys.path.append(".")
 from configs.config import model_path, cuda_visible
 
@@ -27,26 +28,36 @@ def table_info_construct(ppl):
 
 
 def table_column_selection(table_info, ppl):
+    torch.cuda.empty_cache()
     qwq = model()
     evidence = ppl['evidence'].strip()
     question = ppl['question'].strip()
+    json_prompt = '''Respond only with valid json. Do not write an introduction or summary.
+    The format is {"tables": ["table1", "table2", ...],"columns":["table1.`column1`","table2.`column2`",...]}
+    '''
     prompt_table = table_info.strip() + '\n\n' + '### definition: ' + evidence + "\n### Question: " + question
-    table_column = qwq(TABLE_AUG_INSTRUCTION, prompt_table)
+    prompt = prompt_table + '\n\n' + json_prompt
+    table_column = qwq(TABLE_AUG_INSTRUCTION, prompt)
     table_column = json.loads(table_column)
     return table_column
 
 
 def preliminary_sql(table_info, table_column, ppl):
+    torch.cuda.empty_cache()
     qwq = model()
     example = ppl['example']
     evidence = ppl['evidence'].strip()
     question = ppl['question'].strip()
+    json_prompt = '''Respond only with valid json. Do not write an introduction or summary.
+    The format is {"sql": "SQL statement that meets the user's question requirements"}
+    '''
     table_info += f'### tables: {table_column["tables"]}\n'
     table_info += f'### columns: {table_column["columns"]}\n'
 
     table_info = example.strip() + "\n\n### Answer the question by sqlite SQL query only and with no explanation. You must minimize SQL execution time while ensuring correctness.\n" + table_info.strip() + '\n\n### definition: ' + evidence + "\n### Question: " + question
-
-    answer = qwq(SQL_GENERATION_INSTRUCTION, table_info)
+    prompt = table_info + '\n\n' + json_prompt
+    
+    answer = qwq(SQL_GENERATION_INSTRUCTION, prompt)
     try:
         answer = json.loads(answer)
     except Exception as e:
@@ -65,7 +76,9 @@ def main(ppl_file, output_file, info_file, x=0):
     answers = []
     informations = []
 
-    for i in tqdm(range(x, len(ppls))):
+    # for i in tqdm(range(x, len(ppls))):
+    # Try first 128 questions for now
+    for i in tqdm(range(x, 128)):
         information = {}
         ppl = ppls[i]
 
@@ -82,9 +95,16 @@ def main(ppl_file, output_file, info_file, x=0):
         pre_sql = preliminary_sql(table_info, table_column, ppl)
         answers.append(pre_sql)
 
+        if not os.path.exists(output_file):
+            open(output_file, 'w', encoding='utf-8').close()
+
         with open(output_file, 'w', encoding='utf-8') as file:
             for sql in answers:
                 file.write(str(sql) + '\n')
+
+        # Ensure the info file exists
+        if not os.path.exists(info_file):
+            open(info_file, 'w', encoding='utf-8').close()
 
         with open(info_file, 'w', encoding='utf-8') as file:
             json.dump(informations, file, indent=4, ensure_ascii=False)
